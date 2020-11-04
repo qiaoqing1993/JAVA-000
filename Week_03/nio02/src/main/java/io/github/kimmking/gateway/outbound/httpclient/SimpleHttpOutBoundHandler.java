@@ -22,6 +22,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Map;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.CONNECTION;
 import static io.netty.handler.codec.http.HttpHeaderValues.KEEP_ALIVE;
@@ -45,12 +47,33 @@ public class SimpleHttpOutBoundHandler {
             String url = backendUrl+request.uri();
             URI uri = new URIBuilder(url).build();
             HttpGet get = new HttpGet(uri);
+            List<Map.Entry<String, String>> entries = request.headers().entries();
+            for(Map.Entry entry:entries){
+                //System.out.println(entry.getKey()+"--"+entry.getValue());
+                get.addHeader((String) entry.getKey(),(String)entry.getValue());
+            }
             CloseableHttpResponse response = httpClient.execute(get);
             System.out.println(response.toString());
-            System.out.println(EntityUtils.toString(response.getEntity(),"UTF-8"));
-            fullHttpResponse = handleReponse(request,response,ctx);
+           handleReponse(request,response,ctx);
         } catch (URISyntaxException | IOException e) {
             logger.error("处理接口出错", e);
+        }
+
+
+    }
+    public void handleReponse(FullHttpRequest request,
+                                          HttpResponse response,
+                                          //String value,
+                               ChannelHandlerContext ctx) {
+        FullHttpResponse fullHttpResponse = null;
+        String value = null;
+        try {
+            value = EntityUtils.toString(response.getEntity(),"UTF-8");
+            fullHttpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(value.getBytes("UTF-8")));
+            fullHttpResponse.headers().set("Content-Type", "application/json");
+            fullHttpResponse.headers().setInt("Content-Length", fullHttpResponse.content().readableBytes());
+        } catch (IOException e) {
+            System.out.println("处理接口出错"+ e);
             fullHttpResponse = new DefaultFullHttpResponse(HTTP_1_1, NO_CONTENT);
         }finally {
             if (request != null) {
@@ -61,23 +84,6 @@ public class SimpleHttpOutBoundHandler {
                     ctx.write(fullHttpResponse);
                 }
             }
-        }
-
-
-    }
-    public FullHttpResponse handleReponse(FullHttpRequest request, HttpResponse response,ChannelHandlerContext ctx){
-        FullHttpResponse fullHttpResponse = null;
-        String value = null;
-        try {
-            value = EntityUtils.toString(response.getEntity(),"UTF-8");
-            fullHttpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(value.getBytes("UTF-8")));
-            fullHttpResponse.headers().set("Content-Type", "application/json");
-            fullHttpResponse.headers().setInt("Content-Length", fullHttpResponse.content().readableBytes());
-        } catch (IOException e) {
-            logger.error("处理接口出错", e);
-            fullHttpResponse = new DefaultFullHttpResponse(HTTP_1_1, NO_CONTENT);
-        }finally {
-            return fullHttpResponse;
         }
     }
 }

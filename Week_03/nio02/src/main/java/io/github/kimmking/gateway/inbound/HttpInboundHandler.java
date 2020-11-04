@@ -1,5 +1,7 @@
 package io.github.kimmking.gateway.inbound;
 
+import io.github.kimmking.gateway.filter.HttpRequestFilter;
+import io.github.kimmking.gateway.filter.SimpleHttpRequestFilter;
 import io.github.kimmking.gateway.outbound.httpclient.SimpleHttpOutBoundHandler;
 import io.github.kimmking.gateway.outbound.httpclient4.HttpOutboundHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -15,10 +17,12 @@ public class HttpInboundHandler extends ChannelInboundHandlerAdapter {
     private final String proxyServer;
     //private HttpOutboundHandler handler;
     private SimpleHttpOutBoundHandler handler;
+    private HttpRequestFilter filter;
     public HttpInboundHandler(String proxyServer) {
         this.proxyServer = proxyServer;
         //handler = new HttpOutboundHandler(this.proxyServer);
         handler = new SimpleHttpOutBoundHandler(this.proxyServer);
+        filter = new SimpleHttpRequestFilter(this.proxyServer);
     }
     
     @Override
@@ -31,6 +35,7 @@ public class HttpInboundHandler extends ChannelInboundHandlerAdapter {
         try {
             //logger.info("channelRead流量接口请求开始，时间为{}", startTime);
             FullHttpRequest fullRequest = (FullHttpRequest) msg;
+            //filter.filter(fullRequest,ctx);
 //            String uri = fullRequest.uri();
 //            //logger.info("接收到的请求url为{}", uri);
 //            if (uri.contains("/test")) {
