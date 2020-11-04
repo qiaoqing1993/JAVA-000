@@ -11,6 +11,6 @@ public class SimpleHttpRequestFilter implements HttpRequestFilter {
 
     @Override
     public void filter(FullHttpRequest fullRequest, ChannelHandlerContext ctx) {
-       // fullRequest.headers().set("nio","jiayipan");
+        fullRequest.headers().set("nio","jiayipan");
     }
 }
