@@ -41,17 +41,19 @@ public class HttpServer {
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.option(ChannelOption.SO_BACKLOG, 128)
-                    .option(ChannelOption.TCP_NODELAY, true)
-                    .option(ChannelOption.SO_KEEPALIVE, true)
-                    .option(ChannelOption.SO_REUSEADDR, true)
-                    .option(ChannelOption.SO_RCVBUF, 32 * 1024)
-                    .option(ChannelOption.SO_SNDBUF, 32 * 1024)
-                    .option(EpollChannelOption.SO_REUSEPORT, true)
-                    .childOption(ChannelOption.SO_KEEPALIVE, true);
-                    //.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+             .option(ChannelOption.TCP_NODELAY, true)
+             .option(ChannelOption.SO_KEEPALIVE, true)
+             .option(ChannelOption.SO_REUSEADDR, true)
+             .option(ChannelOption.SO_RCVBUF, 32 * 1024)//读缓冲区
+             .option(ChannelOption.SO_SNDBUF, 32 * 1024)//写缓冲区
+             .option(EpollChannelOption.SO_REUSEPORT, true)
+             .childOption(ChannelOption.SO_KEEPALIVE, true);
+              //.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 
-            b.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
-                    .handler(new LoggingHandler(LogLevel.INFO)).childHandler(new HttpInitializer(sslCtx));
+            b.group(bossGroup, workerGroup)
+                    .channel(NioServerSocketChannel.class)
+                    .handler(new LoggingHandler(LogLevel.INFO))
+                    .childHandler(new HttpInitializer(sslCtx));
 
             Channel ch = b.bind(port).sync().channel();
             logger.info("开启netty http服务器，监听地址和端口为 " + (ssl ? "https" : "http") + "://127.0.0.1:" + port + '/');

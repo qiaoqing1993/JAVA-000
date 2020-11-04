@@ -20,8 +20,10 @@ public class HttpInitializer extends ChannelInitializer<SocketChannel> {
 		if (sslCtx != null) {
 			p.addLast(sslCtx.newHandler(ch.alloc()));
 		}
-		p.addLast(new HttpServerCodec());
+		p.addLast(new HttpServerCodec());//http编解码器
 		//p.addLast(new HttpServerExpectContinueHandler());
+
+		//aggregator，消息聚合器，指定大小为1024kb
 		p.addLast(new HttpObjectAggregator(1024 * 1024));
 		p.addLast(new HttpHandler());
 	}
